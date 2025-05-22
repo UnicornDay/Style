@@ -1,0 +1,53 @@
+/* Hide the Streamlit header */
+header {
+    visibility: hidden;
+}
+
+/* Hide the menu (hamburger icon) */
+.stApp > header {
+    display: none;
+}
+
+/* Ensure dropdown background color is white */
+.stSelectbox > div[data-baseweb="select"] > div {
+    background-color: white;
+    color: black;
+}
+
+/* Apply styles for the top bar, sidebar, buttons, and main content */
+:root {
+    --top-bar-color: #FBC02D;
+    --sidebar-bg-color: #FFFDE7;
+    --main-bg-color: #FFF59D;
+    --button-color: #FFEB3B;
+    --text-color: #F57F17;
+}
+
+/* Top bar styles */
+header {
+    background-color: var(--top-bar-color);
+}
+
+/* Sidebar styles */
+.stSidebar {
+    background-color: var(--sidebar-bg-color);
+}
+
+.stButton > button {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 16px;
+    background-color: var(--button-color);
+    color: white;
+}
+
+/* Main page styles */
+.stApp {
+    background-color: var(--main-bg-color);
+    color: var(--text-color);
+}
+
+h1, h2, h3, h4, h5, h6, p, label {
+    color: var(--text-color);
+}
