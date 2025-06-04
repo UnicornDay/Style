@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python File Manager</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+            border-radius: 5px;
+            display: none; /* Hidden by default */
+        }
+        .file-list {
+            list-style: none;
+            padding: 0;
+        }
+        .file-item {
+            background: #f5f5f5;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 3px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .file-content {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        button {
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .view-btn {
+            background: #2196F3;
+        }
+        .download-btn {
+            background: #FF9800;
+        }
+        .remove-btn {
+            background: #f44336;
+            display: none; /* Hidden for normal users */
+        }
+        .role-control {
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+        .admin-features {
+            display: none; /* Only shown for admin */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="role-control">
+            <h2>Select Your Role:</h2>
+            <button id="adminBtn">Login as Admin</button>
+            <button id="userBtn">Continue as User</button>
+        </div>
+        
+        <h1>Python File Manager</h1>
+        
+        <div id="adminFeatures" class="admin-features">
+            <div class="upload-area">
+                <input type="file" id="fileInput" accept=".py" multiple>
+                <p>Drag & drop Python files here or click to browse</p>
+            </div>
+        </div>
+        
+        <h2>Available Files:</h2>
+        <ul id="fileList" class="file-list">
+            <!-- Files will appear here -->
+        </ul>
+        
+        <div id="fileContent" class="file-content">
+            Select a file to view its contents...
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const fileContent = document.getElementById('fileContent');
+        const uploadArea = document.querySelector('.upload-area');
+        const adminFeatures = document.getElementById('adminFeatures');
+        const adminBtn = document.getElementById('adminBtn');
+        const userBtn = document.getElementById('userBtn');
+        
+        // State
+        let uploadedFiles = [];
+        let isAdmin = false;
+        
+        // Role selection
+        adminBtn.addEventListener('click', () => {
+            const password = prompt("Enter admin password:");
+            if (password === "admin123") { // Simple password check
+                isAdmin = true;
+                activateAdminFeatures();
+                alert("Logged in as admin");
+            } else {
+                alert("Incorrect password");
+            }
+        });
+        
+        userBtn.addEventListener('click', () => {
+            isAdmin = false;
+            deactivateAdminFeatures();
+            alert("Continuing as normal user");
+        });
+        
+        function activateAdminFeatures() {
+            document.querySelectorAll('.admin-features, .remove-btn').forEach(el => {
+                el.style.display = 'block';
+            });
+            uploadArea.style.display = 'block';
+            adminFeatures.style.display = 'block';
+        }
+        
+        function deactivateAdminFeatures() {
+            document.querySelectorAll('.admin-features, .remove-btn').forEach(el => {
+                el.style.display = 'none';
+            });
+            uploadArea.style.display = 'none';
+            adminFeatures.style.display = 'none';
+        }
+        
+        // File handling
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+            fileInput.value = '';
+        });
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#4CAF50';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '#ccc';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#ccc';
+            if (isAdmin) {
+                handleFiles(e.dataTransfer.files);
+            }
+        });
+        
+        function handleFiles(files) {
+            if (!isAdmin) return;
+            
+            for (let file of files) {
+                if (file.name.endsWith('.py')) {
+                    if (!uploadedFiles.some(f => f.name === file.name)) {
+                        uploadedFiles.push(file);
+                        addFileToList(file);
+                    }
+                }
+            }
+        }
+        
+        function addFileToList(file) {
+            const li = document.createElement('li');
+            li.className = 'file-item';
+            
+            const fileName = document.createElement('span');
+            fileName.textContent = file.name;
+            
+            const buttons = document.createElement('div');
+            
+            // View button (for everyone)
+            const viewBtn = document.createElement('button');
+            viewBtn.textContent = 'View';
+            viewBtn.className = 'view-btn';
+            viewBtn.onclick = () => displayFileContent(file);
+            
+            // Download button (for everyone)
+            const downloadBtn = document.createElement('button');
+            downloadBtn.textContent = 'Download';
+            downloadBtn.className = 'download-btn';
+            downloadBtn.onclick = () => downloadFile(file);
+            
+            // Remove button (admin only)
+            const removeBtn = document.createElement('button');
+            removeBtn.textContent = 'Delete';
+            removeBtn.className = 'remove-btn';
+            removeBtn.onclick = () => {
+                if (confirm(`Delete ${file.name}?`)) {
+                    li.remove();
+                    uploadedFiles = uploadedFiles.filter(f => f.name !== file.name);
+                    if (fileContent.dataset.currentFile === file.name) {
+                        fileContent.textContent = 'Select a file to view its contents...';
+                        delete fileContent.dataset.currentFile;
+                    }
+                }
+            };
+            
+            buttons.appendChild(viewBtn);
+            buttons.appendChild(downloadBtn);
+            if (isAdmin) {
+                buttons.appendChild(removeBtn);
+                removeBtn.style.display = 'inline-block';
+            }
+            
+            li.appendChild(fileName);
+            li.appendChild(buttons);
+            fileList.appendChild(li);
+        }
+        
+        function displayFileContent(file) {
+            const reader = new FileReader();
+            
+            reader.onload = (e) => {
+                fileContent.textContent = e.target.result;
+                fileContent.dataset.currentFile = file.name;
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        function downloadFile(file) {
+            const a = document.createElement('a');
+            const url = URL.createObjectURL(file);
+            
+            a.href = url;
+            a.download = file.name;
+            document.body.appendChild(a);
+            a.click();
+            
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 0);
+        }
+        
+        // Initialize as normal user
+        deactivateAdminFeatures();
+    </script>
+</body>
+</html>
